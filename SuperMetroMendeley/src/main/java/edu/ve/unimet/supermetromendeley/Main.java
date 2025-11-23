@@ -1,5 +1,16 @@
 package edu.ve.unimet.supermetromendeley;
 
+
+import java.io.FileNotFoundException;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.util.Scanner;
+import java.util.Arrays;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 /**
  * 
  * 
@@ -11,12 +22,58 @@ package edu.ve.unimet.supermetromendeley;
 public class Main extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Main.class.getName());
-
+    private DefaultListModel<String> articleListModel = new DefaultListModel<String>(); 
+    private HashTable<Article> articleHashTable = new HashTable<>();
+    
     /**
      * Creates new form Main
      */
     public Main() {
         initComponents();
+        
+        articleList.setModel(articleListModel);
+        articleList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if(!e.getValueIsAdjusting()) {
+                    String selectedArticle = articleList.getSelectedValue();
+                    Article art = articleHashTable.get(selectedArticle);
+                    if(art == null)
+                        return;
+                    
+                    articleTitle.setText(art.title);
+                    articleTitle.setEnabled(true);
+                    articleBody.setText(art.body);
+                    articleBody.setEnabled(true);
+                    
+                    String authors = "Autores: ";
+                    List<String>.Node<String> authorNode = art.authors.getFirstNode();
+                    
+                    while(authorNode != null) {
+                        authors += authorNode.value;
+                        authors += ", ";
+                        authorNode = authorNode.next;
+                    }
+                    
+                    authors = authors.substring(0, authors.length() - 2);
+                    articleAuthors.setText(authors);
+                    articleAuthors.setEnabled(true);
+                    
+                    String keywords = "Palabras claves: ";
+                    List<String>.Node<String> keywordNode = art.keywords.getFirstNode();
+                    
+                    while(keywordNode != null) {
+                        keywords += keywordNode.value;
+                        keywords += " (" + art.getKeywordOccurrences(keywordNode.value) + " veces), ";
+                        keywordNode = keywordNode.next;
+                    }
+                    
+                    keywords = keywords.substring(0, keywords.length() - 2);
+                    articleKeywords.setText(keywords);
+                    articleKeywords.setEnabled(true);
+                }
+            }
+        });
     }
 
     /**
@@ -28,21 +85,197 @@ public class Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jScrollPane1 = new javax.swing.JScrollPane();
+        articleList = new javax.swing.JList<>();
+        jSeparator1 = new javax.swing.JSeparator();
+        addArticleButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        articleBody = new javax.swing.JTextArea();
+        articleKeywords = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        articleTitle = new javax.swing.JTextArea();
+        articleAuthors = new javax.swing.JLabel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        articleList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane1.setViewportView(articleList);
+
+        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+
+        addArticleButton.setText("Añadir resúmen");
+        addArticleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addArticleButtonActionPerformed(evt);
+            }
+        });
+
+        articleBody.setEditable(false);
+        articleBody.setColumns(20);
+        articleBody.setLineWrap(true);
+        articleBody.setRows(5);
+        articleBody.setWrapStyleWord(true);
+        articleBody.setEnabled(false);
+        jScrollPane2.setViewportView(articleBody);
+
+        articleKeywords.setText("Palabras clave:");
+        articleKeywords.setEnabled(false);
+
+        articleTitle.setEditable(false);
+        articleTitle.setColumns(20);
+        articleTitle.setFont(new java.awt.Font("Helvetica Neue", 1, 18)); // NOI18N
+        articleTitle.setLineWrap(true);
+        articleTitle.setRows(1);
+        articleTitle.setText("Titulo");
+        articleTitle.setWrapStyleWord(true);
+        articleTitle.setBorder(null);
+        articleTitle.setEnabled(false);
+        articleTitle.setFocusable(false);
+        articleTitle.setOpaque(false);
+        jScrollPane3.setViewportView(articleTitle);
+
+        articleAuthors.setText("Autores:");
+        articleAuthors.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(addArticleButton)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 617, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2)
+                    .addComponent(articleKeywords, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(articleAuthors, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(172, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(14, 14, 14)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 315, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(articleAuthors)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(articleKeywords, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(addArticleButton)
+                                .addGap(15, 15, 15)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(7, 7, 7))))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void addArticleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addArticleButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivo de texto", "txt");
+        chooser.setFileFilter(filter);
+        chooser.setMultiSelectionEnabled(false);
+        int retVal = chooser.showOpenDialog(this);
+        if(retVal == JFileChooser.APPROVE_OPTION) {
+            Article art;
+
+            try (Scanner scanner = new Scanner(chooser.getSelectedFile())) {
+                if(!scanner.hasNextLine())
+                    return;
+
+                art = new Article();
+                art.title = scanner.nextLine();
+                if(articleHashTable.get(art.title) != null)
+                {
+                    JOptionPane.showMessageDialog(this, "Este artículo ya fue cargado.");
+                    scanner.close();
+                    return;
+                }
+
+                int loading = 0; // 0: autores, 1: cuerpo, 2: palabras clave
+                while(scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if(line.isBlank())
+                        continue;
+
+                    if(line.equals("Autores"))
+                    {
+                        loading = 0;
+                        continue;
+                    }
+                    else if(line.equals("Resumen"))
+                    {
+                        loading = 1;
+                        continue;
+                    }
+                    else if(line.startsWith("Palabras claves:"))
+                    {
+                        loading = 2;
+                    }
+
+                    switch(loading) {
+                        case 0 ->  {
+                            if(line.endsWith(" "))
+                                line = line.substring(0, line.length() - 1);
+
+                            art.authors.insert(line);
+                        }
+                        case 1 ->  {
+                            art.body += line;
+                        }
+                        case 2 -> {
+                            line = line.substring(17);
+                            String[] keywords = line.split(", ");
+
+                            for(String keyword : keywords) {
+                                if(keyword.endsWith("."))
+                                {
+                                    keyword = keyword.substring(0, keyword.length() - 1);
+                                }
+
+                                art.keywords.insert(keyword);
+                            }
+                        }
+                    }
+                }
+                
+                scanner.close();
+
+                articleHashTable.put(art.title, art);
+                articleListModel.addElement(art.title);
+                
+                // Sortear en orden ascendente
+                String[] titles = new String[articleListModel.size()];
+                for(int i = 0, j = articleListModel.size(); i < j; ++i) {
+                    titles[i] = articleListModel.get(i);
+                }
+                
+                Arrays.sort(titles);
+                
+                articleListModel.clear();
+                for(String title : titles) {
+                    articleListModel.addElement(title);
+                }
+            } catch(FileNotFoundException e) {
+                JOptionPane.showMessageDialog(this, "No se pudo cargar el archivo solicitado.");
+            }
+        }
+        
+    }//GEN-LAST:event_addArticleButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -67,10 +300,18 @@ public class Main extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new Main().setVisible(true));
-        
-        System.out.println("Hello World!");
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addArticleButton;
+    private javax.swing.JLabel articleAuthors;
+    private javax.swing.JTextArea articleBody;
+    private javax.swing.JLabel articleKeywords;
+    private javax.swing.JList<String> articleList;
+    private javax.swing.JTextArea articleTitle;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
 }
