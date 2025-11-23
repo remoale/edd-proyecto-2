@@ -6,6 +6,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.Scanner;
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -189,70 +190,75 @@ public class Main extends javax.swing.JFrame {
         chooser.setMultiSelectionEnabled(false);
         int retVal = chooser.showOpenDialog(this);
         if(retVal == JFileChooser.APPROVE_OPTION) {
-            try {
-                Article art;
-                
-                try (Scanner scanner = new Scanner(chooser.getSelectedFile())) {
-                    if(!scanner.hasNextLine())
-                        return;
-                    
-                    art = new Article();
-                    art.title = scanner.nextLine();
-                    int loading = 0; // 0: autores, 1: cuerpo, 2: palabras clave
-                    while(scanner.hasNextLine()) {
-                        String line = scanner.nextLine();
-                        if(line.isBlank())
-                            continue;
-                        
-                        System.out.println(line);
-                        
-                        if(line.equals("Autores"))
-                        {
-                            loading = 0;
-                            continue;
+            Article art;
+
+            try (Scanner scanner = new Scanner(chooser.getSelectedFile())) {
+                if(!scanner.hasNextLine())
+                    return;
+
+                art = new Article();
+                art.title = scanner.nextLine();
+                if(articleHashTable.get(art.title) != null)
+                {
+                    JOptionPane.showMessageDialog(this, "Este artículo ya fue cargado.");
+                    scanner.close();
+                    return;
+                }
+
+                int loading = 0; // 0: autores, 1: cuerpo, 2: palabras clave
+                while(scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if(line.isBlank())
+                        continue;
+
+                    if(line.equals("Autores"))
+                    {
+                        loading = 0;
+                        continue;
+                    }
+                    else if(line.equals("Resumen"))
+                    {
+                        loading = 1;
+                        continue;
+                    }
+                    else if(line.startsWith("Palabras claves:"))
+                    {
+                        loading = 2;
+                    }
+
+                    switch(loading) {
+                        case 0 ->  {
+                            if(line.endsWith(" "))
+                                line = line.substring(0, line.length() - 1);
+
+                            art.authors.insert(line);
                         }
-                        else if(line.equals("Resumen"))
-                        {
-                            loading = 1;
-                            continue;
+                        case 1 ->  {
+                            art.body += line;
                         }
-                        else if(line.startsWith("Palabras claves:"))
-                        {
-                            loading = 2;
-                        }
-                        
-                        switch(loading) {
-                            case 0 ->  {
-                                if(line.endsWith(" "))
-                                    line = line.substring(0, line.length() - 1);
-                                
-                                art.authors.insert(line);
-                            }
-                            case 1 ->  {
-                                art.body += line;
-                            }
-                            case 2 -> {
-                                line = line.substring(17);
-                                String[] keywords = line.split(", ");
-                                
-                                for(String keyword : keywords) {
-                                    System.out.println(keyword);
-                                    if(keyword.endsWith("."))
-                                    {
-                                        keyword = keyword.substring(0, keyword.length() - 1);
-                                    }
-                                    
-                                    art.keywords.insert(keyword);
+                        case 2 -> {
+                            line = line.substring(17);
+                            String[] keywords = line.split(", ");
+
+                            for(String keyword : keywords) {
+                                if(keyword.endsWith("."))
+                                {
+                                    keyword = keyword.substring(0, keyword.length() - 1);
                                 }
+
+                                art.keywords.insert(keyword);
                             }
                         }
                     }
                 }
                 
+                scanner.close();
+
                 articleHashTable.put(art.title, art);
                 articleListModel.addElement(art.title);
+
             } catch(FileNotFoundException e) {
-                
+                JOptionPane.showMessageDialog(this, "No se pudo cargar el archivo solicitado.");
             }
         }
         
