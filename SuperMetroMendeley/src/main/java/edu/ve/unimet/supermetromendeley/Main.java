@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.Scanner;
+import java.util.Arrays;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
@@ -63,7 +64,7 @@ public class Main extends javax.swing.JFrame {
                     
                     while(keywordNode != null) {
                         keywords += keywordNode.value;
-                        keywords += ", ";
+                        keywords += " (" + art.getKeywordOccurrences(keywordNode.value) + " veces), ";
                         keywordNode = keywordNode.next;
                     }
                     
@@ -256,7 +257,19 @@ public class Main extends javax.swing.JFrame {
 
                 articleHashTable.put(art.title, art);
                 articleListModel.addElement(art.title);
-
+                
+                // Sortear en orden ascendente
+                String[] titles = new String[articleListModel.size()];
+                for(int i = 0, j = articleListModel.size(); i < j; ++i) {
+                    titles[i] = articleListModel.get(i);
+                }
+                
+                Arrays.sort(titles);
+                
+                articleListModel.clear();
+                for(String title : titles) {
+                    articleListModel.addElement(title);
+                }
             } catch(FileNotFoundException e) {
                 JOptionPane.showMessageDialog(this, "No se pudo cargar el archivo solicitado.");
             }

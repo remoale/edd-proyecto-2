@@ -19,4 +19,15 @@ public class Article {
         this.keywords = new List();
         this.body = "";
     }
+    
+    public int getKeywordOccurrences(String keyword) {
+        int count = 0;
+        int lastIndex = 0;
+        int keywordLen = keyword.length();
+        while ((lastIndex = body.indexOf(keyword, lastIndex)) != -1) {
+            count++;
+            lastIndex += keywordLen;
+        }
+        return count;
+    }
 }
