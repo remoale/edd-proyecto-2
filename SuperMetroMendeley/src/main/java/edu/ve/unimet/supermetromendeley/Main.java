@@ -1,81 +1,89 @@
 package edu.ve.unimet.supermetromendeley;
 
-
 import java.io.FileNotFoundException;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.util.Scanner;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * 
  * 
  *
- * @author Bianca
- * @author Remo
+ * @author biancazullo
+ * @author remo
  * @since Nov 12, 2025
  */
 public class Main extends javax.swing.JFrame {
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Main.class.getName());
-    private DefaultListModel<String> articleListModel = new DefaultListModel<String>(); 
-    private HashTable<Article> articleHashTable = new HashTable<>();
-    
+
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
+    private final DefaultListModel<String> articleListModel = new DefaultListModel<>();
+    private final ArticleManager articleManager = new ArticleManager();
+
     /**
      * Creates new form Main
      */
     public Main() {
-        initComponents();
-        
+        initComponents(); // <-- deja tu versión generada por NetBeans
+
+        // Enlazar el modelo a la JList
         articleList.setModel(articleListModel);
+
+        // Listener de selección de artículo
         articleList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if(!e.getValueIsAdjusting()) {
-                    String selectedArticle = articleList.getSelectedValue();
-                    Article art = articleHashTable.get(selectedArticle);
-                    if(art == null)
+                if (!e.getValueIsAdjusting()) {
+                    String selectedTitle = articleList.getSelectedValue();
+                    if (selectedTitle == null) {
                         return;
-                    
+                    }
+
+                    Article art = articleManager.getArticle(selectedTitle);
+                    if (art == null) {
+                        return;
+                    }
+
+                    // Título
                     articleTitle.setText(art.title);
                     articleTitle.setEnabled(true);
+
+                    // Cuerpo
                     articleBody.setText(art.body);
                     articleBody.setEnabled(true);
-                    
+
+                    // Autores
                     String authors = "Autores: ";
                     List<String>.Node<String> authorNode = art.authors.getFirstNode();
-                    
-                    while(authorNode != null) {
-                        authors += authorNode.value;
-                        authors += ", ";
+
+                    while (authorNode != null) {
+                        authors += authorNode.value + ", ";
                         authorNode = authorNode.next;
                     }
-                    
-                    authors = authors.substring(0, authors.length() - 2);
+
+                    if (authors.length() > "Autores: ".length()) {
+                        authors = authors.substring(0, authors.length() - 2);
+                    }
+
                     articleAuthors.setText(authors);
                     articleAuthors.setEnabled(true);
-                    
-                    String keywords = "Palabras claves: ";
-                    List<String>.Node<String> keywordNode = art.keywords.getFirstNode();
-                    
-                    while(keywordNode != null) {
-                        keywords += keywordNode.value;
-                        keywords += " (" + art.getKeywordOccurrences(keywordNode.value) + " veces), ";
-                        keywordNode = keywordNode.next;
-                    }
-                    
-                    keywords = keywords.substring(0, keywords.length() - 2);
-                    articleKeywords.setText(keywords);
+
+                    // Palabras clave + frecuencias (usamos ArticleManager)
+                    String keywordsText = articleManager.buildKeywordSummary(art);
+                    articleKeywords.setText(keywordsText);
                     articleKeywords.setEnabled(true);
                 }
             }
         });
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -103,7 +111,7 @@ public class Main extends javax.swing.JFrame {
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
-        addArticleButton.setText("Añadir resúmen");
+        addArticleButton.setText("Añadir resumen");
         addArticleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addArticleButtonActionPerformed(evt);
@@ -189,92 +197,41 @@ public class Main extends javax.swing.JFrame {
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivo de texto", "txt");
         chooser.setFileFilter(filter);
         chooser.setMultiSelectionEnabled(false);
+
         int retVal = chooser.showOpenDialog(this);
-        if(retVal == JFileChooser.APPROVE_OPTION) {
-            Article art;
 
-            try (Scanner scanner = new Scanner(chooser.getSelectedFile())) {
-                if(!scanner.hasNextLine())
-                    return;
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            try {
+                // Le delegamos toda la lógica a ArticleManager
+                Article art = articleManager.addArticleFromFile(chooser.getSelectedFile());
 
-                art = new Article();
-                art.title = scanner.nextLine();
-                if(articleHashTable.get(art.title) != null)
-                {
-                    JOptionPane.showMessageDialog(this, "Este artículo ya fue cargado.");
-                    scanner.close();
+                if (art == null) {
+                    // Puede ser archivo vacío o título duplicado
+                    JOptionPane.showMessageDialog(this,
+                            "El archivo está vacío o el artículo ya fue cargado.");
                     return;
                 }
 
-                int loading = 0; // 0: autores, 1: cuerpo, 2: palabras clave
-                while(scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    if(line.isBlank())
-                        continue;
-
-                    if(line.equals("Autores"))
-                    {
-                        loading = 0;
-                        continue;
-                    }
-                    else if(line.equals("Resumen"))
-                    {
-                        loading = 1;
-                        continue;
-                    }
-                    else if(line.startsWith("Palabras claves:"))
-                    {
-                        loading = 2;
-                    }
-
-                    switch(loading) {
-                        case 0 ->  {
-                            if(line.endsWith(" "))
-                                line = line.substring(0, line.length() - 1);
-
-                            art.authors.insert(line);
-                        }
-                        case 1 ->  {
-                            art.body += line;
-                        }
-                        case 2 -> {
-                            line = line.substring(17);
-                            String[] keywords = line.split(", ");
-
-                            for(String keyword : keywords) {
-                                if(keyword.endsWith("."))
-                                {
-                                    keyword = keyword.substring(0, keyword.length() - 1);
-                                }
-
-                                art.keywords.insert(keyword);
-                            }
-                        }
-                    }
-                }
-                
-                scanner.close();
-
-                articleHashTable.put(art.title, art);
+                // Añadir título al modelo de la lista
                 articleListModel.addElement(art.title);
-                
-                // Sortear en orden ascendente
+
+                // Ordenar títulos alfabéticamente
                 String[] titles = new String[articleListModel.size()];
-                for(int i = 0, j = articleListModel.size(); i < j; ++i) {
+                for (int i = 0; i < articleListModel.size(); i++) {
                     titles[i] = articleListModel.get(i);
                 }
-                
+
                 Arrays.sort(titles);
-                
+
                 articleListModel.clear();
-                for(String title : titles) {
+                for (String title : titles) {
                     articleListModel.addElement(title);
                 }
-            } catch(FileNotFoundException e) {
+
+            } catch (FileNotFoundException e) {
                 JOptionPane.showMessageDialog(this, "No se pudo cargar el archivo solicitado.");
             }
         }
-        
     }//GEN-LAST:event_addArticleButtonActionPerformed
 
     /**
@@ -282,21 +239,16 @@ public class Main extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ReflectiveOperationException | UnsupportedLookAndFeelException ex) {
+            logger.log(Level.SEVERE, null, ex);
         }
-        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new Main().setVisible(true));

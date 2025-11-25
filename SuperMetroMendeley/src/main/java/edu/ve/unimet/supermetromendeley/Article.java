@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package edu.ve.unimet.supermetromendeley;
 
 /**
@@ -15,8 +11,9 @@ public class Article {
     public List<String> keywords;
     
     public Article() {
-        this.authors = new List();
-        this.keywords = new List();
+        this.title = "";
+        this.authors = new List<String>();
+        this.keywords = new List<String>();
         this.body = "";
     }
     

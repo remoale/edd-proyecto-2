@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package edu.ve.unimet.supermetromendeley;
 
 /**
@@ -31,6 +27,8 @@ public class HashTable<V> {
             h ^= (b & 0xFF);
             h *= 0x01000193;
         }
+        
+        h = h & 0x7fffffff;
         
         return h % capacity;
     }
