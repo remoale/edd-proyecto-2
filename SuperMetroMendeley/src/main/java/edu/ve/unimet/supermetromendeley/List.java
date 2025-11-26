@@ -1,7 +1,9 @@
 package edu.ve.unimet.supermetromendeley;
 
 /**
- *
+ * Lista enlazada simple con inserción al final.
+ * Permite almacenar elementos en orden de inserción y acceder al primer nodo.
+ * 
  * @author biancazullo
  */
 public class List<T> {

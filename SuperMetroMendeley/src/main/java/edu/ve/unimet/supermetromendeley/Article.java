@@ -1,7 +1,9 @@
 package edu.ve.unimet.supermetromendeley;
 
 /**
- *
+ * Representa un artículo de investigación con título, autores,
+ * cuerpo del resumen y palabras clave asociadas.
+ * 
  * @author biancazullo
  */
 public class Article {

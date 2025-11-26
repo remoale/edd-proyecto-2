@@ -8,7 +8,7 @@ import java.util.Scanner;
  * Administra los artículos:
  * - carga desde archivo
  * - almacenamiento en HashTable
- * - índices por autor y palabra clave con árboles AVL.
+ * - índices por autor y palabra clave con árboles AVL
  *
  * @author remo
  * @since Nov 23, 2025
@@ -21,8 +21,48 @@ public class ArticleManager {
     private HashTable<List<Article>> authorIndex = new HashTable<>();
     private HashTable<List<Article>> keywordIndex = new HashTable<>();
 
+    private List<String> titles = new List<>();
+
     public ArticleManager() {
-        // precargar investigaciones
+        precargarInvestigaciones();
+    }
+
+    /**
+     * Devuelve todos los títulos de artículos cargados (precargados + añadidos).
+     */
+    public List<String> getAllTitles() {
+        return titles;
+    }
+
+    /**
+     * Precarga un conjunto de investigaciones al comenzar el sistema.
+     */
+    private void precargarInvestigaciones() {
+        String[] archivos = {
+            "resumenes/1.txt",
+            "resumenes/2.txt",
+            "resumenes/3.txt"
+        };
+
+        for (String path : archivos) {
+            try {
+                File f = new File(path);
+                if (!f.exists()) {
+                    System.err.println("No existe archivo de precarga: " + path);
+                    continue;
+                }
+
+                Article art = addArticleFromFile(f);
+                if (art != null) {
+                    System.out.println("Precargado: " + art.title);
+                } else {
+                    System.out.println("No se precargó (vacío o duplicado): " + path);
+                }
+
+            } catch (FileNotFoundException e) {
+                System.err.println("No se pudo leer archivo de precarga: " + path);
+            }
+        }
     }
 
     public Article getArticle(String title) {
@@ -35,7 +75,7 @@ public class ArticleManager {
 
     /**
      * Carga un artículo desde archivo y lo agrega al sistema.
-     * 
+     *
      * @param file archivo de texto con el formato del enunciado
      * @return Article creado, o null si el archivo está vacío
      *         o si el título ya existía.
@@ -50,7 +90,6 @@ public class ArticleManager {
             Article art = new Article();
             art.title = scanner.nextLine();
 
-            // Validar que no exista el mismo resumen
             if (articles.get(art.title) != null) {
                 return null;
             }
@@ -64,13 +103,13 @@ public class ArticleManager {
                     continue;
                 }
 
-                if (line.equals("Autores")) {
+                if (line.toLowerCase().equals("autores")) {
                     loading = 0;
                     continue;
-                } else if (line.equals("Resumen")) {
+                } else if (line.toLowerCase().equals("resumen")) {
                     loading = 1;
                     continue;
-                } else if (line.startsWith("Palabras claves:")) {
+                } else if (line.toLowerCase().startsWith("palabras claves:")) {
                     loading = 2;
                 }
 
@@ -99,6 +138,7 @@ public class ArticleManager {
             }
 
             articles.put(art.title, art);
+            titles.insert(art.title);
 
             updateAuthorIndex(art);
             updateKeywordIndex(art);
@@ -133,7 +173,7 @@ public class ArticleManager {
 
         return keywordsText;
     }
-    
+
     public List<Article> searchByKeyword(String keyword) {
         List<Article> result = keywordIndex.get(keyword);
         if (result == null) {
@@ -156,6 +196,12 @@ public class ArticleManager {
         return result;
     }
     
+    public List<String> listAllAuthorsInOrder() {
+        List<String> result = new List<>();
+        authorsTree.toInorderList(result);
+        return result;
+    }
+
     private void updateAuthorIndex(Article art) {
         List<String>.Node<String> authorNode = art.authors.getFirstNode();
 

@@ -14,8 +14,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
- * 
- * 
+ * Interfaz principal del sistema. Permite cargar, buscar y visualizar
+ * investigaciones, así como consultar autores y palabras clave.
  *
  * @author biancazullo
  * @author remo
@@ -31,12 +31,18 @@ public class Main extends javax.swing.JFrame {
      * Creates new form Main
      */
     public Main() {
-        initComponents(); // <-- deja tu versión generada por NetBeans
+        initComponents();
 
-        // Enlazar el modelo a la JList
         articleList.setModel(articleListModel);
+        
+        List<String> titles = articleManager.getAllTitles();
+        List<String>.Node<String> node = titles.getFirstNode();
 
-        // Listener de selección de artículo
+        while (node != null) {
+            articleListModel.addElement(node.value);
+            node = node.next;
+        }
+
         articleList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -51,15 +57,12 @@ public class Main extends javax.swing.JFrame {
                         return;
                     }
 
-                    // Título
                     articleTitle.setText(art.title);
                     articleTitle.setEnabled(true);
 
-                    // Cuerpo
                     articleBody.setText(art.body);
                     articleBody.setEnabled(true);
 
-                    // Autores
                     String authors = "Autores: ";
                     List<String>.Node<String> authorNode = art.authors.getFirstNode();
 
@@ -75,7 +78,6 @@ public class Main extends javax.swing.JFrame {
                     articleAuthors.setText(authors);
                     articleAuthors.setEnabled(true);
 
-                    // Palabras clave + frecuencias (usamos ArticleManager)
                     String keywordsText = articleManager.buildKeywordSummary(art);
                     articleKeywords.setText(keywordsText);
                     articleKeywords.setEnabled(true);
@@ -103,6 +105,10 @@ public class Main extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         articleTitle = new javax.swing.JTextArea();
         articleAuthors = new javax.swing.JLabel();
+        searchByKeywordButton = new javax.swing.JButton();
+        searchByAuthorButton = new javax.swing.JButton();
+        listKeywordsButton = new javax.swing.JButton();
+        exitButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -145,6 +151,34 @@ public class Main extends javax.swing.JFrame {
         articleAuthors.setText("Autores:");
         articleAuthors.setEnabled(false);
 
+        searchByKeywordButton.setText("Buscar por palabra clave");
+        searchByKeywordButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchByKeywordButtonActionPerformed(evt);
+            }
+        });
+
+        searchByAuthorButton.setText("Buscar por autor");
+        searchByAuthorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchByAuthorButtonActionPerformed(evt);
+            }
+        });
+
+        listKeywordsButton.setText("Listar palabras claves");
+        listKeywordsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                listKeywordsButtonActionPerformed(evt);
+            }
+        });
+
+        exitButton.setText("Salir");
+        exitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -152,8 +186,17 @@ public class Main extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addArticleButton)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(addArticleButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(searchByAuthorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(searchByKeywordButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(listKeywordsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                        .addComponent(exitButton)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -162,7 +205,7 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(jScrollPane2)
                     .addComponent(articleKeywords, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(articleAuthors, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(172, Short.MAX_VALUE))
+                .addGap(104, 104, 104))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -183,8 +226,15 @@ public class Main extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(addArticleButton)
-                                .addGap(15, 15, 15)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(addArticleButton)
+                                    .addComponent(searchByKeywordButton)
+                                    .addComponent(exitButton))
+                                .addGap(12, 12, 12)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(searchByAuthorButton)
+                                    .addComponent(listKeywordsButton))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(7, 7, 7))))
         );
@@ -202,20 +252,16 @@ public class Main extends javax.swing.JFrame {
 
         if (retVal == JFileChooser.APPROVE_OPTION) {
             try {
-                // Le delegamos toda la lógica a ArticleManager
                 Article art = articleManager.addArticleFromFile(chooser.getSelectedFile());
 
                 if (art == null) {
-                    // Puede ser archivo vacío o título duplicado
                     JOptionPane.showMessageDialog(this,
                             "El archivo está vacío o el artículo ya fue cargado.");
                     return;
                 }
 
-                // Añadir título al modelo de la lista
                 articleListModel.addElement(art.title);
 
-                // Ordenar títulos alfabéticamente
                 String[] titles = new String[articleListModel.size()];
                 for (int i = 0; i < articleListModel.size(); i++) {
                     titles[i] = articleListModel.get(i);
@@ -234,6 +280,212 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_addArticleButtonActionPerformed
 
+    private void searchByKeywordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchByKeywordButtonActionPerformed
+        List<String> keywordsList = articleManager.listAllKeywordsInOrder();
+        List<String>.Node<String> node = keywordsList.getFirstNode();
+
+        if (node == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No hay palabras clave registradas todavía.",
+                    "Buscar por palabra clave",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        int count = 0;
+        List<String>.Node<String> tmp = node;
+        while (tmp != null) {
+            count++;
+            tmp = tmp.next;
+        }
+
+        String[] keywordOptions = new String[count];
+        int i = 0;
+        while (node != null) {
+            keywordOptions[i++] = node.value;
+            node = node.next;
+        }
+
+        String selectedKeyword = (String) JOptionPane.showInputDialog(
+                this,
+                "Selecciona una palabra clave:",
+                "Buscar por palabra clave",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                keywordOptions,
+                keywordOptions[0]
+        );
+
+        if (selectedKeyword == null) {
+            return;
+        }
+
+        List<Article> articlesWithKeyword = articleManager.searchByKeyword(selectedKeyword);
+        List<Article>.Node<Article> artNode = articlesWithKeyword.getFirstNode();
+
+        if (artNode == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No hay investigaciones asociadas a la palabra clave seleccionada.",
+                    "Sin resultados",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        int artCount = 0;
+        List<Article>.Node<Article> tmpArt = artNode;
+        while (tmpArt != null) {
+            artCount++;
+            tmpArt = tmpArt.next;
+        }
+
+        String[] articleOptions = new String[artCount];
+        int j = 0;
+        while (artNode != null) {
+            articleOptions[j++] = artNode.value.title;
+            artNode = artNode.next;
+        }
+
+        String selectedTitle = (String) JOptionPane.showInputDialog(
+                this,
+                "Selecciona una investigación:",
+                "Resultados para \"" + selectedKeyword + "\"",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                articleOptions,
+                articleOptions[0]
+        );
+
+        if (selectedTitle == null) {
+            return;
+        }
+
+        articleList.setSelectedValue(selectedTitle, true);
+    }//GEN-LAST:event_searchByKeywordButtonActionPerformed
+
+    private void searchByAuthorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchByAuthorButtonActionPerformed
+        List<String> authorsList = articleManager.listAllAuthorsInOrder();
+        List<String>.Node<String> node = authorsList.getFirstNode();
+
+        if (node == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No hay autores registrados todavía.",
+                    "Buscar por autor",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        int count = 0;
+        List<String>.Node<String> tmp = node;
+        while (tmp != null) {
+            count++;
+            tmp = tmp.next;
+        }
+
+        String[] authorOptions = new String[count];
+        int i = 0;
+        while (node != null) {
+            authorOptions[i++] = node.value;
+            node = node.next;
+        }
+
+        String selectedAuthor = (String) JOptionPane.showInputDialog(
+                this,
+                "Selecciona un autor:",
+                "Buscar por autor",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                authorOptions,
+                authorOptions[0]
+        );
+
+        if (selectedAuthor == null) {
+            return;
+        }
+
+        List<Article> articlesByAuthor = articleManager.searchByAuthor(selectedAuthor);
+        List<Article>.Node<Article> artNode = articlesByAuthor.getFirstNode();
+
+        if (artNode == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No hay investigaciones asociadas al autor seleccionado.",
+                    "Sin resultados",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        int artCount = 0;
+        List<Article>.Node<Article> tmpArt = artNode;
+        while (tmpArt != null) {
+            artCount++;
+            tmpArt = tmpArt.next;
+        }
+
+        String[] articleOptions = new String[artCount];
+        int j = 0;
+        while (artNode != null) {
+            articleOptions[j++] = artNode.value.title;
+            artNode = artNode.next;
+        }
+
+        String selectedTitle = (String) JOptionPane.showInputDialog(
+                this,
+                "Selecciona una investigación:",
+                "Resultados para \"" + selectedAuthor + "\"",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                articleOptions,
+                articleOptions[0]
+        );
+
+        if (selectedTitle == null) {
+            return;
+        }
+
+        articleList.setSelectedValue(selectedTitle, true);
+    }//GEN-LAST:event_searchByAuthorButtonActionPerformed
+
+    private void listKeywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listKeywordsButtonActionPerformed
+        List<String> keywordsList = articleManager.listAllKeywordsInOrder();
+        List<String>.Node<String> node = keywordsList.getFirstNode();
+
+        if (node == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No hay palabras claves registradas todavía.",
+                    "Listar palabras claves",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Palabras claves registradas (orden alfabético):\n\n");
+
+        while (node != null) {
+            sb.append("- ").append(node.value).append("\n");
+            node = node.next;
+        }
+
+        JOptionPane.showMessageDialog(
+                this,
+                sb.toString(),
+                "Listado de palabras claves",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }//GEN-LAST:event_listKeywordsButtonActionPerformed
+
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_exitButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -251,7 +503,11 @@ public class Main extends javax.swing.JFrame {
         }
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new Main().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> {
+            Main m = new Main();
+            m.setLocationRelativeTo(null);
+            m.setVisible(true);
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -261,9 +517,13 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel articleKeywords;
     private javax.swing.JList<String> articleList;
     private javax.swing.JTextArea articleTitle;
+    private javax.swing.JButton exitButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JButton listKeywordsButton;
+    private javax.swing.JButton searchByAuthorButton;
+    private javax.swing.JButton searchByKeywordButton;
     // End of variables declaration//GEN-END:variables
 }

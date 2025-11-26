@@ -26,8 +26,20 @@
           <Group type="102" attributes="0">
               <EmptySpace min="20" pref="20" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="addArticleButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" min="-2" pref="340" max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="addArticleButton" max="32767" attributes="0"/>
+                          <Component id="searchByAuthorButton" pref="129" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="searchByKeywordButton" max="32767" attributes="0"/>
+                          <Component id="listKeywordsButton" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="41" max="32767" attributes="0"/>
+                      <Component id="exitButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
@@ -38,7 +50,7 @@
                   <Component id="articleKeywords" alignment="0" max="32767" attributes="0"/>
                   <Component id="articleAuthors" alignment="0" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace pref="172" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="104" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -62,8 +74,17 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jSeparator1" min="-2" pref="480" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
-                              <Component id="addArticleButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="15" pref="15" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="addArticleButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="searchByKeywordButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="exitButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="searchByAuthorButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="listKeywordsButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="jScrollPane1" min="-2" pref="430" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -166,6 +187,38 @@
         <Property name="text" type="java.lang.String" value="Autores:"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="searchByKeywordButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Buscar por palabra clave"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchByKeywordButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="searchByAuthorButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Buscar por autor"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchByAuthorButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="listKeywordsButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Listar palabras claves"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="listKeywordsButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="exitButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Salir"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exitButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

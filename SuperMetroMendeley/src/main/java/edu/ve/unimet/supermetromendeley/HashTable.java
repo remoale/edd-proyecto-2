@@ -1,7 +1,9 @@
 package edu.ve.unimet.supermetromendeley;
 
 /**
- *
+ * Implementación simple de una tabla hash con encadenamiento,
+ * que permite almacenar y recuperar valores por clave en O(1) en promedio.
+ * 
  * @author biancazullo
  */
 public class HashTable<V> {
