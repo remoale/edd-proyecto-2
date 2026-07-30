@@ -1,10 +1,32 @@
-# SuperMetroMendeley
+# Academic Search Engine (SuperMetroMendeley)
 
-Este proyecto implementa un sistema para gestionar investigaciones académicas, permitiendo cargar resúmenes desde archivos de texto, buscarlos por autores o palabras clave, y visualizar su contenido y estadísticas asociadas. Incluye estructuras propias como tablas hash, listas enlazadas y árboles AVL para garantizar eficiencia.
+Java desktop system for managing academic research summaries: load text files, search by author or keyword, and view content with related statistics.
 
-## Integrantes del grupo
-- Bianca Zullo 31065119
-- Remo Agostinelli 30142921
+Built with custom data structures for efficient indexing and lookup:
 
-## Repositorio
-https://github.com/remoale/edd-proyecto-2
+- **AVL trees** — balanced search by keyword / author
+- **Hash tables** — fast indexing
+- **Linked lists** — ordered result collections
+
+## Features
+
+- Load article summaries from plain-text files
+- Search by keyword (AVL + hash table)
+- Search by author (ordered list from AVL)
+- List keywords via in-order AVL traversal
+- View article details and associated statistics
+
+## Tech
+
+- Java
+- Custom AVL tree, hash table, and linked list implementations
+- Swing UI
+
+## Team
+
+- Remo Agostinelli
+- Bianca Zullo
+
+## Run
+
+Open the project in your Java IDE and run the main application class, or compile and run from the project root with your usual `javac` / `java` workflow.
